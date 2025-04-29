@@ -1,103 +1,107 @@
-import Image from "next/image";
+"use client";
+
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, Environment, useGLTF, Text } from "@react-three/drei";
+import * as THREE from "three";
+import { useEffect, useRef, Suspense, useState } from "react";
+import { motion } from "motion/react";
+import { Group } from "three";
+
+type ModelProps = {
+  onLoaded?: () => void;
+};
+
+function Model({ onLoaded }: ModelProps) {
+  const groupRef = useRef<Group>(null);
+  const { scene, animations } = useGLTF("/models/raihan/scene.gltf") as {
+    scene: THREE.Group;
+    animations: THREE.AnimationClip[];
+  };
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+
+  useEffect(() => {
+    if (animations && animations.length) {
+      mixerRef.current = new THREE.AnimationMixer(scene);
+      animations.forEach((clip) => {
+        mixerRef.current!.clipAction(clip).play();
+      });
+    }
+    if (onLoaded) onLoaded();
+  }, [animations, scene, onLoaded]);
+
+  useFrame((_, delta) => {
+    mixerRef.current?.update(delta);
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* Top 3D Text */}
+      <Text
+        position={[0, 2, 0]}
+        fontSize={0.5}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        Top React Native Developer
+      </Text>
+
+      {/* 3D Model */}
+      <primitive object={scene} scale={0.7} position={[0, -1, 0]} />
+
+      {/* Bottom 3D Text */}
+      <Text
+        position={[0, -2.2, 0]}
+        fontSize={0.3}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        🚀 React Native Expert
+      </Text>
+    </group>
+  );
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [modelLoaded, setModelLoaded] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  return (
+    <main className="relative h-screen w-full flex items-center justify-center bg-gradient-to-b from-gray-900 to-black overflow-hidden">
+      {/* 3D Model with Texts */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {!modelLoaded && (
+          <div className="absolute flex flex-col items-center justify-center z-20">
+            <div className="w-16 h-16 border-4 border-blue-600 border-dashed rounded-full animate-spin mb-4"></div>
+            <p className="text-white text-lg">Loading 3D Magic...</p>
+          </div>
+        )}
+        <Canvas camera={{ position: [0, 1.5, 5], fov: 50 }}>
+          <ambientLight intensity={0.7} />
+          <directionalLight position={[5, 5, 5]} intensity={1} />
+          <Suspense fallback={null}>
+            <motion.group
+              initial={{ opacity: 0 }}
+              animate={{ opacity: modelLoaded ? 1 : 0 }}
+              transition={{ duration: 1 }}
+            >
+              <Model onLoaded={() => setModelLoaded(true)} />
+            </motion.group>
+            <Environment preset="city" />
+          </Suspense>
+          <OrbitControls enableZoom={false} />
+        </Canvas>
+      </div>
+
+      {/* Hire Me Button */}
+      <motion.button
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="absolute bottom-10 px-6 py-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 z-10"
+      >
+        Hire Me
+      </motion.button>
+    </main>
   );
 }
