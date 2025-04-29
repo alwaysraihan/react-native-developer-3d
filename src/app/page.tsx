@@ -95,6 +95,7 @@ export default function Home() {
 
       {/* Hire Me Button */}
       <motion.button
+  onClick={() => window.location.href = 'mailto:dev.nurulislam@gmail.com'}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8 }}
